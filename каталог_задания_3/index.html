@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" type="text/css" />
+    <title>Форма</title>
+  </head>
+  <body class="form-body">
+    <div class="form-container">
+      <h2>Форма</h2>
+      <form action="db.php" method="POST" id="myForm">
+        <div class="form-group input-control">
+          <label for="fullname" class="form-label">ФИО:</label>
+          <input type="text" id="fullname" name="fullname" class="form-input" />
+          <div class="error"></div>
+        </div>
+        <div class="form-group input-control">
+          <label for="phone" class="form-label">Телефон:</label>
+          <input type="tel" id="phone" name="phone" class="form-input" />
+          <div class="error"></div>
+        </div>
+        <div class="form-group input-control">
+          <label for="email" class="form-label">E-mail:</label>
+          <input type="email" id="email" name="email" class="form-input" />
+          <div class="error"></div>
+        </div>
+        <div class="form-group input-control">
+          <label for="dob" class="form-label">Дата рождения:</label>
+          <input type="date" id="dob" name="dob" class="form-input" />
+          <div class="error"></div>
+        </div>
+        <div class="form-group input-control">
+          <label class="form-label">Пол:</label>
+          <input
+            type="radio"
+            id="male"
+            name="gender"
+            value="male"
+            class="form-radio"
+          />
+          <label for="male">Мужской</label>
+          <input
+            type="radio"
+            id="female"
+            name="gender"
+            value="female"
+            class="form-radio"
+          />
+          <label for="female">Женский</label>
+          <div class="error"></div>
+        </div>
+        <div class="form-group input-control">
+          <label for="languages" class="form-label"
+            >Любимый язык программирования:</label
+          ><br />
+          <select id="languages" name="languages[]" class="form-input" multiple>
+            <option value="Pascal">Pascal</option>
+            <option value="C">C</option>
+            <option value="C++">C++</option>
+            <option value="JavaScript">JavaScript</option>
+            <option value="PHP">PHP</option>
+            <option value="Python">Python</option>
+            <option value="Java">Java</option>
+            <option value="Haskell">Haskell</option>
+            <option value="Clojure">Clojure</option>
+            <option value="Prolog">Prolog</option>
+            <option value="Scala">Scala</option>
+          </select>
+          <div class="error"></div>
+        </div>
+        <div class="form-group input-control">
+          <label for="bio" class="form-label">Биография:</label><br />
+          <textarea id="bio" name="bio" class="form-input" rows="5"></textarea>
+          <div class="error"></div>
+        </div>
+        <div class="form-group input-control">
+          <input
+            type="checkbox"
+            id="contractt"
+            name="contractt"
+            class="form-checkbox"
+          />
+          <label for="contractt" class="form-label"
+            >С контрактом ознакомлен</label
+          >
+          <div class="error"></div>
+        </div>
+        <button type="submit" class="form-button">Сохранить</button>
+      </form>
+    </div>
+    <script src="formValidation.js"></script>
+  </body>
+</html>
