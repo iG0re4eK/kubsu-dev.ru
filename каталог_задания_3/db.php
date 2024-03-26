@@ -44,14 +44,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             echo $error . '<br>';
         }
     } else {
-        
-        $stmt = $db->prepare("INSERT INTO User (fullname, phone, email, dob, gender, bio) VALUES (?, ?, ?, ?, ?, ?)");
+        // Добавление данных в таблицу Users
+        $stmt = $db->prepare("INSERT INTO Users (fullname, phone, email, dob, gender, bio) VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->execute([$_POST['fullname'], $_POST['phone'], $_POST['email'], $_POST['dob'], $_POST['gender'], $_POST['bio']]);
         $user_id = $db->lastInsertId(); // Получаем идентификатор пользователя
 
-        
+        // Добавление данных в таблицу UserProgrammingLanguages
         foreach ($_POST['languages'] as $language_id) {
-            $stmt = $db->prepare("INSERT INTO UserProgrammingLanguage (user_id, language_id) VALUES (?, ?)");
+            $stmt = $db->prepare("INSERT INTO UserProgrammingLanguages (user_id, lang_id) VALUES (?, ?)");
             $stmt->execute([$user_id, $language_id]);
         }
 
@@ -63,3 +63,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 //desc User;
 //desc UserProgrammingLanguage;
 ?>
+
+
+
