@@ -1,6 +1,6 @@
 <?php
 // Подключение к базе данных
-include('db_connection.php'); // Подключаем файл с настройками базы данных
+include('db_credentials.php'); // Подключаем файл с настройками базы данных
 
 try {
     $db = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME, DB_USER, DB_PASSWORD,
