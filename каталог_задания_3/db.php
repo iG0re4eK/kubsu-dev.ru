@@ -1,7 +1,7 @@
 <?php
 // Подключение к базе данных
-$user = 'u67431'; // Ваш логин
-$pass = '6979325'; // Ваш пароль
+$user = 'u67431'; //  логин
+$pass = '6979325'; //  пароль
 $db = new PDO('mysql:host=localhost;dbname=u67431', $user, $pass,
     [PDO::ATTR_PERSISTENT => true, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]); // Подключение к базе данных
 
@@ -44,12 +44,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             echo $error . '<br>';
         }
     } else {
-        // Добавление данных в таблицу Users
+        
         $stmt = $db->prepare("INSERT INTO Users (fullname, phone, email, dob, gender, bio) VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->execute([$_POST['fullname'], $_POST['phone'], $_POST['email'], $_POST['dob'], $_POST['gender'], $_POST['bio']]);
         $user_id = $db->lastInsertId(); // Получаем идентификатор пользователя
 
-        // Добавление данных в таблицу UserProgrammingLanguages
+        
         foreach ($_POST['languages'] as $language_id) {
             $stmt = $db->prepare("INSERT INTO UserProgrammingLanguages (user_id, lang_id) VALUES (?, ?)");
             $stmt->execute([$user_id, $language_id]);
@@ -58,10 +58,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         echo 'Данные успешно сохранены.';
     }
 }
-//mysql -uu67431 -p6979325 u67431;
-//desc ProgrammingLanguage;
-//desc User;
-//desc UserProgrammingLanguage;
 ?>
 
 
