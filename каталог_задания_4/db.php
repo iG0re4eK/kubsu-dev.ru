@@ -1,32 +1,36 @@
 <?php
 // Подключение к базе данных
-$user = 'u67431'; //  логин
-$pass = '6979325'; //  пароль
-$db = new PDO('mysql:host=localhost;dbname=u67431', $user, $pass,
-    [PDO::ATTR_PERSISTENT => true, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]); // Подключение к базе данных
+include('db_connection.php'); // Подключаем файл с настройками базы данных
 
+try {
+    $db = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME, DB_USER, DB_PASSWORD,
+        [PDO::ATTR_PERSISTENT => true, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+} catch (PDOException $e) {
+    echo 'Подключение не удалось: ' . $e->getMessage();
+    exit;
+}
 // Проверка, был ли запрос методом POST
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Проверка наличия обязательных полей и их валидация
     $errors = [];
 
-    // Функция для проверки запрещенных символов
-    function containsInvalidCharacters($input) {
-        return preg_match('/[^\wа-яёА-ЯЁ\s.,!?-]/u', $input);
-    }
+    // Регулярные выражения для валидации
+    $nameRegex = '/^[а-яА-ЯёЁa-zA-Z]+ [а-яА-ЯёЁa-zA-Z]+ ?[а-яА-ЯёЁa-zA-Z]+$/u';
+    $phoneRegex = '/^(\s*)?(\+)?([- _():=+]?\d[- _():=+]?){10,14}(\s*)?$/';
+    $emailRegex = '/^(([^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/';
 
     // Проверка ФИО
-    if (empty($_POST['fullname']) || containsInvalidCharacters($_POST['fullname'])) {
+    if (empty($_POST['fullname']) || !preg_match($nameRegex, $_POST['fullname'])) {
         $errors['fullname'] = 'Заполните корректно ФИО (допустимы буквы, пробелы, тире, запятые, точки, вопросительные и восклицательные знаки)';
     }
 
     // Проверка телефона
-    if (empty($_POST['phone']) || !preg_match('/^\+?\d{3}-?\d{3}-?\d{2}-?\d{2}$/', $_POST['phone'])) {
+    if (empty($_POST['phone']) || !preg_match($phoneRegex, $_POST['phone'])) {
         $errors['phone'] = 'Заполните корректно телефон (допустим формат: +123-456-78-90)';
     }
 
     // Проверка email
-    if (empty($_POST['email']) || !filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
+    if (empty($_POST['email']) || !preg_match($emailRegex, $_POST['email'])) {
         $errors['email'] = 'Заполните корректно email.';
     }
 
@@ -46,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     // Проверка биографии
-    if (empty($_POST['bio']) || containsInvalidCharacters($_POST['bio'])) {
+    if (empty($_POST['bio']) || !preg_match('/^[а-яА-ЯёЁa-zA-Z0-9\s.,!?-]+$/', $_POST['bio'])) {
         $errors['bio'] = 'Заполните корректно биографию (допустимы буквы, цифры, пробелы, запятые, точки, вопросительные и восклицательные знаки)';
     }
 
@@ -56,12 +60,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         header('Location: ' . $_SERVER['PHP_SELF']);
         exit;
     } else {
-        
+        // Добавление данных в таблицу Users
         $stmt = $db->prepare("INSERT INTO Users (fullname, phone, email, dob, gender, bio) VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->execute([$_POST['fullname'], $_POST['phone'], $_POST['email'], $_POST['dob'], $_POST['gender'], $_POST['bio']]);
         $user_id = $db->lastInsertId(); // Получаем идентификатор пользователя
 
-        
+        // Добавление данных в таблицу UserProgrammingLanguages
         foreach ($_POST['languages'] as $language_id) {
             $stmt = $db->prepare("INSERT INTO UserProgrammingLanguages (user_id, lang_id) VALUES (?, ?)");
             $stmt->execute([$user_id, $language_id]);
