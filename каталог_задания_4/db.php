@@ -9,68 +9,84 @@ try {
     exit;
 }
 
+// Функция для установки куки с сообщением об ошибке
+function set_error_cookie($field, $message) {
+    setcookie('form_error_' . $field, $message, 0, '/');
+}
+
+// Функция для установки куки с данными формы
+function set_form_data_cookie($field, $value) {
+    setcookie('form_data_' . $field, $value, time() + (365 * 24 * 60 * 60), '/');
+}
+
+// Функция для проверки данных формы и установки куков с ошибками и данными формы
+function validate_and_set_cookies($field, $value, $regex, $error_message) {
+    if (!preg_match($regex, $value)) {
+        set_error_cookie($field, $error_message);
+        set_form_data_cookie($field, $value);
+        return false;
+    }
+    return true;
+}
+
+// Проверка, был ли запрос методом POST
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $errors = [];
+    // Проверка и сохранение ФИО
+    $fullname = $_POST['fullname'];
+    $fullname_regex = '/^[а-яА-ЯёЁa-zA-Z]+ [а-яА-ЯёЁa-zA-Z]+ ?[а-яА-ЯёЁa-zA-Z]+$/u';
+    $fullname_error_message = 'Заполните корректно ФИО (допустимы буквы, пробелы, тире, запятые, точки, вопросительные и восклицательные знаки)';
+    $fullname_valid = validate_and_set_cookies('fullname', $fullname, $fullname_regex, $fullname_error_message);
 
-    $nameRegex = '/^[а-яА-ЯёЁa-zA-Z]+ [а-яА-ЯёЁa-zA-Z]+ ?[а-яА-ЯёЁa-zA-Z]+$/';
-    $phoneRegex = '/^(\s*)?(\+)?([- _():=+]?\d[- _():=+]?){10,14}(\s*)?$/';
-    $emailRegex = '/^(([^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/';
+    // Проверка и сохранение телефона
+    $phone = $_POST['phone'];
+    $phone_regex = '/^(\s*)?(\+)?([- _():=+]?\d[- _():=+]?){10,14}(\s*)?$/';
+    $phone_error_message = 'Заполните корректно телефон (допустим формат: +123-456-78-90)';
+    $phone_valid = validate_and_set_cookies('phone', $phone, $phone_regex, $phone_error_message);
 
-    if (empty($_POST['fullname']) || !preg_match($nameRegex, $_POST['fullname'])) {
-        $errors['fullname'] = 'Заполните корректно ФИО (допустимы буквы, пробелы, тире, запятые, точки, вопросительные и восклицательные знаки)';
+    // Проверка и сохранение email
+    $email = $_POST['email'];
+    $email_regex = '/^(([^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/';
+    $email_error_message = 'Заполните корректно email.';
+    $email_valid = validate_and_set_cookies('email', $email, $email_regex, $email_error_message);
+
+    // Далее продолжайте также для других полей формы...
+
+    // Если все поля формы прошли валидацию, сохраните данные в куки на год
+    if ($fullname_valid && $phone_valid && $email_valid /*&& другие поля*/) {
+        setcookie('form_data_fullname', $fullname, time() + (365 * 24 * 60 * 60), '/');
+        setcookie('form_data_phone', $phone, time() + (365 * 24 * 60 * 60), '/');
+        setcookie('form_data_email', $email, time() + (365 * 24 * 60 * 60), '/');
+        // Сохраните остальные поля формы...
     }
 
-    if (empty($_POST['phone']) || !preg_match($phoneRegex, $_POST['phone'])) {
-        $errors['phone'] = 'Заполните корректно телефон (допустим формат: +123-456-78-90)';
-    }
+    // Перенаправление на страницу с формой
+    header('Location: ' . $_SERVER['PHP_SELF']);
+    exit;
+}
 
-    if (empty($_POST['email']) || !preg_match($emailRegex, $_POST['email'])) {
-        $errors['email'] = 'Заполните корректно email.';
-    }
-
-    if (empty($_POST['dob']) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $_POST['dob'])) {
-        $errors['dob'] = 'Заполните корректно дату рождения.';
-    }
-
-    if (empty($_POST['gender'])) {
-        $errors['gender'] = 'Выберите пол.';
-    }
-
-    if (empty($_POST['languages'])) {
-        $errors['languages'] = 'Выберите хотя бы один язык программирования.';
-    }
-
-    if (empty($_POST['bio']) || !preg_match('/^[а-яА-ЯёЁa-zA-Z0-9\s.,!?-]+$/', $_POST['bio'])) {
-        $errors['bio'] = 'Заполните корректно биографию (допустимы буквы, цифры, пробелы, запятые, точки, вопросительные и восклицательные знаки)';
-    }
-
-    if (!empty($errors)) {
-        setcookie('form_errors', serialize($errors), time() + (365 * 24 * 60 * 60), '/');
-        header('Location: ' . $_SERVER['PHP_SELF']);
-        exit;
-    } else {
-        if (isset($_POST['gender'])) {
-            setcookie('gender', $_POST['gender'], time() + (365 * 24 * 60 * 60), '/'); 
+// Вывод ошибок над формой
+if (!empty($_COOKIE)) {
+    foreach ($_COOKIE as $name => $value) {
+        if (strpos($name, 'form_error_') === 0) {
+            $field = substr($name, strlen('form_error_'));
+            echo "<p style='color: red;'>{$value}</p>";
+            // Очистите куки с ошибками после их вывода
+            setcookie($name, '', time() - 3600, '/');
         }
-        if (isset($_POST['dob'])) {
-            setcookie('dob', $_POST['dob'], time() + (365 * 24 * 60 * 60), '/'); 
-        }
-
-        setcookie('form_data', serialize($_POST), time() + (365 * 24 * 60 * 60), '/'); 
-        
-        $stmt = $db->prepare("INSERT INTO Users (fullname, phone, email, dob, gender, bio) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$_POST['fullname'], $_POST['phone'], $_POST['email'], $_POST['dob'], $_POST['gender'], $_POST['bio']]);
-        $user_id = $db->lastInsertId(); 
-
-        foreach ($_POST['languages'] as $language_id) {
-            $stmt = $db->prepare("INSERT INTO UserProgrammingLanguages (user_id, lang_id) VALUES (?, ?)");
-            $stmt->execute([$user_id, $language_id]);
-        }
-
-        echo 'Данные успешно сохранены.';
     }
 }
 
-$errors = isset($_COOKIE['form_errors']) ? unserialize($_COOKIE['form_errors']) : [];
-setcookie('form_errors', '', time() - 3600, '/');
+// Вывод значений полей формы из куков
+$fullname_value = isset($_COOKIE['form_data_fullname']) ? $_COOKIE['form_data_fullname'] : '';
+$phone_value = isset($_COOKIE['form_data_phone']) ? $_COOKIE['form_data_phone'] : '';
+$email_value = isset($_COOKIE['form_data_email']) ? $_COOKIE['form_data_email'] : '';
+
+// Вывод HTML-формы с подсвечиванием полей с ошибками
+echo "<form method='POST' action='{$_SERVER['PHP_SELF']}'>";
+echo "<input type='text' name='fullname' value='{$fullname_value}' style='border: 1px solid " . (isset($_COOKIE['form_error_fullname']) ? 'red' : 'black') . ";'>";
+echo "<input type='text' name='phone' value='{$phone_value}' style='border: 1px solid " . (isset($_COOKIE['form_error_phone']) ? 'red' : 'black') . ";'>";
+echo "<input type='text' name='email' value='{$email_value}' style='border: 1px solid " . (isset($_COOKIE['form_error_email']) ? 'red' : 'black') . ";'>";
+// Выведите остальные поля формы...
+echo "<button type='submit'>Отправить</button>";
+echo "</form>";
 ?>
