@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     if (!empty($errors)) {
-        setcookie('form_errors', serialize($errors), time() + (365 * 24 * 60 * 60), '/');
+        setcookie('form_errors', serialize($errors), 0 , '/');
         header('Location: ' . $_SERVER['PHP_SELF']);
         exit;
     } else {
