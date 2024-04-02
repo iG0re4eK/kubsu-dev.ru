@@ -1,10 +1,13 @@
 <?php
 // Подключение к базе данных
-$user = 'u67431'; //  логин
-$pass = '6979325'; //  пароль
-$db = new PDO('mysql:host=localhost;dbname=u67431', $user, $pass,
-    [PDO::ATTR_PERSISTENT => true, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]); // Подключение к базе данных
-
+include('db_credentials.php');
+try {
+    $db = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME, DB_USER, DB_PASSWORD,
+        [PDO::ATTR_PERSISTENT => true, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+} catch (PDOException $e) {
+    echo 'Подключение не удалось: ' . $e->getMessage();
+    exit;
+}
 // Проверка, был ли запрос методом POST
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Проверка наличия обязательных полей и их валидация
